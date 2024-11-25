@@ -14,31 +14,6 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
   app.use(bodyParser.json());
 
   // GET /filteredimage endpoint
-  app.get('/filteredimage', async (req, res) => {
-    const { image_url } = req.query;
-
-    // 1. Validate the image_url query
-    if (!image_url) {
-      return res.status(400).send({ message: 'Image URL is required!' });
-    }
-
-    try {
-      // 2. Call filterImageFromURL(image_url) to filter the image
-      const filteredPath = await filterImageFromURL(image_url);
-
-      // 3. Send the resulting file in the response
-      res.sendFile(filteredPath, (err) => {
-        if (err) {
-          res.status(500).send({ message: 'Error sending the file.' });
-        } else {
-          // 4. Delete the file after response is sent
-          deleteLocalFiles([filteredPath]);
-        }
-      });
-    } catch (error) {
-      return res.status(422).send({ message: 'Unable to process the image URL. Ensure the URL is valid and points to an image.' });
-    }
-  });
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
@@ -55,6 +30,18 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
     /**************************************************************************** */
+
+  app.get("/filteredimage", async (req, res) => {
+    const image_url = req.query.image_url;
+    if(!image_url) {
+      res.status(400).send("Image url is required");
+    }
+
+    const filtered_image = await filterImageFromURL(image_url);
+    res.status(200).sendFile(filtered_image, () => {
+      deleteLocalFiles([filtered_image]);
+    })
+  })
 
   //! END @TODO1
   

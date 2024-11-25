@@ -1,5 +1,6 @@
 import fs from "fs";
 import Jimp from "jimp";
+import fetch from "node-fetch";
 
 
 // filterImageFromURL
@@ -12,7 +13,20 @@ import Jimp from "jimp";
  export async function filterImageFromURL(inputURL) {
   return new Promise(async (resolve, reject) => {
     try {
-      const photo = await Jimp.read(inputURL);
+      // Fetch the image first
+      const response = await fetch(inputURL);
+      
+      // Check if the fetch was successful
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log("inputURL = ", inputURL)
+     // Get the image buffer
+     const buffer = await response.arrayBuffer();
+
+     // Read the buffer with Jimp
+     const photo = await Jimp.read(buffer);
+      console.log("photo = ", photo)
       const outpath =
         "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
       await photo
@@ -23,6 +37,7 @@ import Jimp from "jimp";
           resolve(outpath);
         });
     } catch (error) {
+      console.error('Image processing error:', error);
       reject(error);
     }
   });
